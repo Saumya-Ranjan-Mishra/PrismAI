@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phi3-cpu-ollama
+  labels:
+    app: phi3-cpu-ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phi3-cpu-ollama
+  template:
+    metadata:
+      labels:
+        app: phi3-cpu-ollama
+    spec:
+      containers:
+      - name: ollama-server
+        image: ollama/ollama:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: OLLAMA_SSL_SKIP_VERIFY
+          value: "true"
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -u
+          ollama serve &
+          OLLAMA_PID=$!
+          echo "Waiting for Ollama server to boot..."
+          until ollama list >/dev/null 2>&1; do sleep 1; done
+          (
+            while true; do
+              if ollama show phi3:mini >/dev/null 2>&1; then
+                echo "Phi-3 model is available."
+              else
+                echo "Phi-3 model missing. Attempting pull..."
+                if ollama pull --insecure phi3:mini; then
+                  echo "Phi-3 model loaded successfully."
+                else
+                  echo "Phi-3 pull failed (likely network policy/proxy block). Will retry in 5 minutes."
+                fi
+              fi
+              sleep 300
+            done
+          ) &
+
+          echo "Ollama server running. Startup completed."
+          wait "$OLLAMA_PID"
+        ports:
+        - containerPort: 11434
+          name: http
+        resources:
+          requests:
+            cpu: "2"
+            memory: "3Gi"
+          limits:
+            cpu: "4"
+            memory: "6Gi"
+        volumeMounts:
+        - mountPath: /root/.ollama
+          name: ollama-storage
+      volumes:
+      - name: ollama-storage
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phi3-cpu-ollama-svc
+  labels:
+    app: phi3-cpu-ollama
+spec:
+  ports:
+  - port: 11434
+    targetPort: 11434
+    protocol: TCP
+    name: http
+  selector:
+    app: phi3-cpu-ollama
+  type: ClusterIP
