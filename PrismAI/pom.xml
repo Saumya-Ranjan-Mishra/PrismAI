@@ -28,6 +28,9 @@
     </scm>
     <properties>
         <java.version>21</java.version>
+        <spring-ai.version>2.0.0</spring-ai.version>
+        <djl.version>0.32.0</djl.version>
+        <pytorch.version>2.5.1</pytorch.version>
     </properties>
     <dependencies>
         <dependency>
@@ -37,6 +40,55 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webservices</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <!-- Maps a Java float[] to the pgvector "vector" column type. -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-vector</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Local ONNX embeddings: the model and tokenizer ship inside this jar. -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-transformers</artifactId>
+            <version>${spring-ai.version}</version>
+        </dependency>
+        <!-- Spring AI's embedding model builds a DJL NDManager, which otherwise downloads the
+             PyTorch natives at runtime. Resolving them through Maven keeps startup offline. -->
+        <dependency>
+            <groupId>ai.djl.pytorch</groupId>
+            <artifactId>pytorch-jni</artifactId>
+            <version>${pytorch.version}-${djl.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>ai.djl.pytorch</groupId>
+            <artifactId>pytorch-native-cpu</artifactId>
+            <classifier>win-x86_64</classifier>
+            <version>${pytorch.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>ai.djl.pytorch</groupId>
+            <artifactId>pytorch-native-cpu</artifactId>
+            <classifier>linux-x86_64</classifier>
+            <version>${pytorch.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
