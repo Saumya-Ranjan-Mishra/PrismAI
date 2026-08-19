@@ -7,10 +7,22 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class EmbeddingModelConfig {
-  @Bean
+
+  @Bean("miniLm")
   public TransformersEmbeddingModel embeddingModel(
       @Value("${prism.embedding.tokenizer-resource}") String tokenizerResource,
       @Value("${prism.embedding.model-resource}") String modelResource) {
+    TransformersEmbeddingModel model = new TransformersEmbeddingModel();
+    model.setTokenizerResource(tokenizerResource);
+    model.setModelResource(modelResource);
+    return model;
+  }
+
+  @Bean("quantizedMiniLM")
+  public TransformersEmbeddingModel quantizedEmbeddingModel(
+      @Value("${prism.embedding.quantized-tokenizer-resource}") String tokenizerResource,
+      @Value("${prism.embedding.quantized-model-resource}") String modelResource) {
+
     TransformersEmbeddingModel model = new TransformersEmbeddingModel();
     model.setTokenizerResource(tokenizerResource);
     model.setModelResource(modelResource);
