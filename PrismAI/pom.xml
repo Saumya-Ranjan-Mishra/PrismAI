@@ -62,14 +62,12 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Local ONNX embeddings: the model and tokenizer ship inside this jar. -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-transformers</artifactId>
             <version>${spring-ai.version}</version>
         </dependency>
-        <!-- Spring AI's embedding model builds a DJL NDManager, which otherwise downloads the
-             PyTorch natives at runtime. Resolving them through Maven keeps startup offline. -->
+
         <dependency>
             <groupId>ai.djl.pytorch</groupId>
             <artifactId>pytorch-jni</artifactId>
@@ -111,6 +109,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webservices-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
     </dependencies>
 

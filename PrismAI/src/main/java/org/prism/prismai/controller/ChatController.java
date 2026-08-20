@@ -1,6 +1,6 @@
 package org.prism.prismai.controller;
 
-import org.prism.prismai.services.interfaces.QueryEmbeddingService;
+import org.prism.prismai.service.interfaces.QueryEmbeddingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
