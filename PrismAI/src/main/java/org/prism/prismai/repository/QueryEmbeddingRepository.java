@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 @Repository
@@ -35,10 +36,10 @@ public interface QueryEmbeddingRepository extends JpaRepository<QueryEmbedding, 
       ORDER BY embedding <=> CAST(:embedding AS vector)
       LIMIT :limit
       """, nativeQuery = true)
-  List<QueryEmbeddingDto> findNearest(@Param("embedding") String embedding,
+  Optional<List<QueryEmbeddingDto>> findNearest(@Param("embedding") String embedding,
       @Param("limit") int limit);
 
-  default List<QueryEmbeddingDto> findSimilar(float[] embedding, int limit) {
+  default Optional<List<QueryEmbeddingDto>> findSimilar(float[] embedding, int limit) {
     return findNearest(toVectorLiteral(embedding), limit);
   }
 

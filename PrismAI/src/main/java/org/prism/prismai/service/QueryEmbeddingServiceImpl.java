@@ -9,7 +9,9 @@ import org.springframework.ai.transformers.TransformersEmbeddingModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class QueryEmbeddingServiceImpl implements QueryEmbeddingService {
@@ -29,7 +31,6 @@ public class QueryEmbeddingServiceImpl implements QueryEmbeddingService {
     TransformersEmbeddingModel embeddingModel = embeddingModelFactory.getModel(modelName);
     String normalized = query.trim();
     float[] embedding = embeddingModel.embed(normalized);
-    // return repository.save(new QueryEmbedding(normalized, embedding));
 
     repository.insertIfAbsent(normalized, QueryEmbeddingRepository.toVectorLiteral(embedding));
   }
@@ -38,6 +39,12 @@ public class QueryEmbeddingServiceImpl implements QueryEmbeddingService {
   @Transactional(readOnly = true)
   public List<QueryEmbeddingDto> findSimilarQueries(String query, int limit) {
     TransformersEmbeddingModel embeddingModel = embeddingModelFactory.getModel(modelName);
-    return repository.findSimilar(embeddingModel.embed(query.trim()), limit);
+    Optional<List<QueryEmbeddingDto>> result = repository.findSimilar(embeddingModel.embed(query.trim()), limit);
+
+    if (result.isPresent()) {
+      return result.get();
+    }
+
+    return new ArrayList<QueryEmbeddingDto>();
   }
 }

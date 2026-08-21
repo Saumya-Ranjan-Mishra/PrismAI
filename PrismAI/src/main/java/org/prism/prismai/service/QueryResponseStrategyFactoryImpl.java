@@ -9,7 +9,9 @@ import org.prism.prismai.entities.ResponseProviders;
 import org.prism.prismai.exception.InvalidResponseProviderException;
 import org.prism.prismai.service.interfaces.QueryResponseStrategy;
 import org.prism.prismai.service.interfaces.QueryResponseStrategyFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class QueryResponseStrategyFactoryImpl implements QueryResponseStrategyFactory {
 
   private Map<ResponseProviders, QueryResponseStrategy> strategies = new HashMap<>();

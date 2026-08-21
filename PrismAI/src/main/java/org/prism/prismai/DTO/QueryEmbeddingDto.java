@@ -10,6 +10,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class QueryEmbeddingDto {
-  public String query;
-  public BigDecimal precisionScore;
+  String query;
+  BigDecimal precisionScore;
 }
