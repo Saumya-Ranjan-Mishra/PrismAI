@@ -1,6 +1,6 @@
 package org.prism.prismai.controller;
 
-import org.prism.prismai.services.interfaces.QueryEmbeddingService;
+import org.prism.prismai.service.interfaces.ChatService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,15 +9,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/chat")
 public class ChatController {
 
-    private final QueryEmbeddingService queryEmbeddingService;
+    private final ChatService chatService;
 
-    public ChatController(QueryEmbeddingService queryEmbeddingService) {
-        this.queryEmbeddingService = queryEmbeddingService;
+    public ChatController(ChatService chatService) {
+        this.chatService = chatService;
     }
 
     @GetMapping("/initiateChat")
     public ResponseEntity<String> send(@RequestParam String message) {
-        queryEmbeddingService.storeQuery(message);
-        return ResponseEntity.status(HttpStatus.OK).body("question received successfully");
+        String response = chatService.serveUserQuery(message);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

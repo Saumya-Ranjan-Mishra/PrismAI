@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 CREATE TABLE IF NOT EXISTS query_embedding (
     id         BIGSERIAL PRIMARY KEY,
-    query      TEXT NOT NULL,
+    query      TEXT NOT NULL UNIQUE,
     embedding  vector(384) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
