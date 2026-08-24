@@ -2,7 +2,6 @@ package org.prism.prismai.service;
 
 import org.prism.prismai.AI_models.EmbeddingModelFactory;
 import org.prism.prismai.DTO.QueryEmbeddingDto;
-import org.prism.prismai.entities.QueryEmbedding;
 import org.prism.prismai.repository.QueryEmbeddingRepository;
 import org.prism.prismai.service.interfaces.QueryEmbeddingService;
 import org.springframework.ai.transformers.TransformersEmbeddingModel;

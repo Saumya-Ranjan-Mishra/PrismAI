@@ -1,6 +1,8 @@
 package org.prism.prismai.service;
 
 import java.util.List;
+
+import org.prism.prismai.DTO.ChatResponseDto;
 import org.prism.prismai.DTO.QueryEmbeddingDto;
 import org.prism.prismai.entities.ResponseProviders;
 import org.prism.prismai.service.interfaces.CacheService;
@@ -32,13 +34,13 @@ public class ChatServiceImplemetation implements ChatService {
   }
 
   @Override
-  public String serveUserQuery(String userQuery) {
+  public ChatResponseDto serveUserQuery(String userQuery) {
     ChatServiceState state = new ChatServiceState();
 
     String responseFromCache = cacheService.getValue(userQuery);
 
     if (responseFromCache != null)
-      return responseFromCache;
+      return new ChatResponseDto("L1Cache", responseFromCache);
 
     List<QueryEmbeddingDto> dto = queryEmbeddingService.findSimilarQueries(userQuery, 1);
 
@@ -58,8 +60,9 @@ public class ChatServiceImplemetation implements ChatService {
     QueryResponseStrategy strategy = queryResponseStrategyFactory.getStrategy(state.responseProvider);
     String response = strategy.getResponse(state.query);
     cacheService.saveValue(userQuery, response);
+    queryEmbeddingService.storeQuery(userQuery);
 
-    return response;
+    return new ChatResponseDto(state.responseProvider.toString(), response);
   }
 
   @Getter

@@ -1,5 +1,6 @@
 package org.prism.prismai.controller;
 
+import org.prism.prismai.DTO.ChatResponseDto;
 import org.prism.prismai.service.interfaces.ChatService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +17,8 @@ public class ChatController {
     }
 
     @GetMapping("/initiateChat")
-    public ResponseEntity<String> send(@RequestParam String message) {
-        String response = chatService.serveUserQuery(message);
+    public ResponseEntity<ChatResponseDto> send(@RequestParam String message) {
+        ChatResponseDto response = chatService.serveUserQuery(message);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
