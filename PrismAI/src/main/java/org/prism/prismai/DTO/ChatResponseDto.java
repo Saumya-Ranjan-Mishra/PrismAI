@@ -8,4 +8,5 @@ import lombok.Getter;
 public class ChatResponseDto {
   public String servedFrom;
   public String response;
+  public String userIntent;
 }

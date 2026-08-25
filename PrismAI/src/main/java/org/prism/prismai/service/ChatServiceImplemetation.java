@@ -11,10 +11,8 @@ import org.prism.prismai.service.interfaces.IntentClassificationService;
 import org.prism.prismai.service.interfaces.QueryEmbeddingService;
 import org.prism.prismai.service.interfaces.QueryResponseStrategy;
 import org.prism.prismai.service.interfaces.QueryResponseStrategyFactory;
+import org.prism.prismai.state.ChatServiceState;
 import org.springframework.stereotype.Service;
-
-import lombok.Getter;
-import lombok.Setter;
 
 @Service
 public class ChatServiceImplemetation implements ChatService {
@@ -40,7 +38,7 @@ public class ChatServiceImplemetation implements ChatService {
     String responseFromCache = cacheService.getValue(userQuery);
 
     if (responseFromCache != null)
-      return new ChatResponseDto("L1Cache", responseFromCache);
+      return new ChatResponseDto("L1Cache", responseFromCache, "NA");
 
     List<QueryEmbeddingDto> dto = queryEmbeddingService.findSimilarQueries(userQuery, 1);
 
@@ -48,41 +46,21 @@ public class ChatServiceImplemetation implements ChatService {
       state.setPrecisionScore(dto.get(0).getPrecisionScore().doubleValue());
     }
 
-    if (state.precisionScore >= 0.93) {
+    if (state.getPrecisionScore() >= 0.93) {
       state.setResponseProvider(ResponseProviders.L2Cache);
     } else {
       state.setIntent(intentClassificationService.getUserQueryIntent(userQuery));
       state.setResponseProviderForUserQuery();
     }
 
-    state.setQuery(state.responseProvider == ResponseProviders.L2Cache ? dto.get(0).getQuery() : userQuery);
+    state.setQuery(state.getResponseProvider() == ResponseProviders.L2Cache ? dto.get(0).getQuery() : userQuery);
 
-    QueryResponseStrategy strategy = queryResponseStrategyFactory.getStrategy(state.responseProvider);
-    String response = strategy.getResponse(state.query);
+    QueryResponseStrategy strategy = queryResponseStrategyFactory.getStrategy(state.getResponseProvider());
+    String response = strategy.getResponse(state.getQuery());
+    state.setTokenCount(response.split(" ").length);
     cacheService.saveValue(userQuery, response);
-    queryEmbeddingService.storeQuery(userQuery);
+    queryEmbeddingService.storeQueryAndMetadata(userQuery, state);
 
-    return new ChatResponseDto(state.responseProvider.toString(), response);
+    return new ChatResponseDto(state.getResponseProvider().toString(), response, state.getIntent());
   }
-
-  @Getter
-  @Setter
-  private class ChatServiceState {
-    double precisionScore;
-    String intent;
-    ResponseProviders responseProvider;
-    String query;
-
-    private void setResponseProviderForUserQuery() {
-      if (this.precisionScore > 0.80 && this.precisionScore < 0.93) {
-        responseProvider = "STATIC_FACTUAL".equalsIgnoreCase(intent) ? ResponseProviders.L2Cache
-            : ResponseProviders.SLM;
-      } else if ("STATIC_FACTUAL".equalsIgnoreCase(this.intent) || "REALTIME_DYNAMIC".equalsIgnoreCase(this.intent)) {
-        responseProvider = ResponseProviders.SLM;
-      } else {
-        responseProvider = ResponseProviders.LLM;
-      }
-    }
-  }
-
 }
