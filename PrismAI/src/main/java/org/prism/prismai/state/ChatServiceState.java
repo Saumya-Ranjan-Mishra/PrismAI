@@ -15,7 +15,7 @@ public class ChatServiceState {
   long tokenCount;
 
   public void setResponseProviderForUserQuery() {
-    if (this.precisionScore > 0.80 && this.precisionScore < 0.93) {
+    if (this.precisionScore >= 0.80 && this.precisionScore < 0.93) {
       responseProvider = "STATIC_FACTUAL".equalsIgnoreCase(intent) ? ResponseProviders.L2Cache
           : ResponseProviders.SLM;
     } else if ("STATIC_FACTUAL".equalsIgnoreCase(this.intent) || "REALTIME_DYNAMIC".equalsIgnoreCase(this.intent)) {

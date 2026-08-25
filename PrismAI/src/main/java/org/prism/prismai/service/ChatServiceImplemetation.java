@@ -38,7 +38,7 @@ public class ChatServiceImplemetation implements ChatService {
     String responseFromCache = cacheService.getValue(userQuery);
 
     if (responseFromCache != null)
-      return new ChatResponseDto("L1Cache", responseFromCache, "NA");
+      return new ChatResponseDto("L1Cache", responseFromCache, "NA", "NA", 0.0);
 
     List<QueryEmbeddingDto> dto = queryEmbeddingService.findSimilarQueries(userQuery, 1);
 
@@ -62,6 +62,8 @@ public class ChatServiceImplemetation implements ChatService {
     cacheService.saveValue(userQuery, response);
     queryEmbeddingService.storeQueryAndMetadata(userQuery, state);
 
-    return new ChatResponseDto(state.getResponseProvider().toString(), response, state.getIntent());
+    return new ChatResponseDto(state.getResponseProvider().toString(), response, state.getIntent(),
+        dto.get(0).getQuery(),
+        state.getPrecisionScore());
   }
 }

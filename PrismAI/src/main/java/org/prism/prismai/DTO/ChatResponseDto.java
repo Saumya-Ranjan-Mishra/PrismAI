@@ -9,4 +9,6 @@ public class ChatResponseDto {
   public String servedFrom;
   public String response;
   public String userIntent;
+  public String closestQuery;
+  public double similarityScore;
 }

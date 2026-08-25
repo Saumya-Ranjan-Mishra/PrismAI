@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 public class SLMResponseStrategy implements QueryResponseStrategy {
 
   private static final ThreadLocal<Long> LAST_TOTAL_TOKENS = new ThreadLocal<>();
+  private static final String KEEP_ALIVE = "24h";
 
   private final RestTemplate restTemplate;
 
@@ -52,6 +53,7 @@ public class SLMResponseStrategy implements QueryResponseStrategy {
 
     requestDto.setModel("phi3:mini");
     requestDto.setTemperature(0.5);
+    requestDto.setKeepAlive(KEEP_ALIVE);
 
     UserQueryMessage message = new UserQueryMessage();
     message.setRole("user");
