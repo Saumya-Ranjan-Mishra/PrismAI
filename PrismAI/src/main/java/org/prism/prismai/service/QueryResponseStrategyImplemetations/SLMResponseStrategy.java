@@ -13,6 +13,8 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class SLMResponseStrategy implements QueryResponseStrategy {
 
+  private static final ThreadLocal<Long> LAST_TOTAL_TOKENS = new ThreadLocal<>();
+
   private final RestTemplate restTemplate;
 
   public SLMResponseStrategy(RestTemplate restTemplate) {
@@ -33,7 +35,16 @@ public class SLMResponseStrategy implements QueryResponseStrategy {
             OllamaChatCompletionResponseDto.class)
         .getBody();
 
+    LAST_TOTAL_TOKENS.set(extractTotalTokens(completion));
+
     return extractAssistantContent(completion);
+  }
+
+  @Override
+  public Long consumeTokenCount() {
+    Long tokenCount = LAST_TOTAL_TOKENS.get();
+    LAST_TOTAL_TOKENS.remove();
+    return tokenCount;
   }
 
   private ChatRequestDto getRequestDto(String userQuery) {
@@ -62,6 +73,13 @@ public class SLMResponseStrategy implements QueryResponseStrategy {
     }
 
     return firstChoice.getMessage().getContent().trim();
+  }
+
+  private Long extractTotalTokens(OllamaChatCompletionResponseDto completion) {
+    if (completion == null || completion.getUsage() == null || completion.getUsage().getTotal_tokens() == null) {
+      return null;
+    }
+    return completion.getUsage().getTotal_tokens().longValue();
   }
 
 }

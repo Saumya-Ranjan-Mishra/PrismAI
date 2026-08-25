@@ -57,7 +57,8 @@ public class ChatServiceImplemetation implements ChatService {
 
     QueryResponseStrategy strategy = queryResponseStrategyFactory.getStrategy(state.getResponseProvider());
     String response = strategy.getResponse(state.getQuery());
-    state.setTokenCount(response.split(" ").length);
+    Long providerTokenCount = strategy.consumeTokenCount();
+    state.setTokenCount(providerTokenCount != null ? providerTokenCount : response.trim().split("\\s+").length);
     cacheService.saveValue(userQuery, response);
     queryEmbeddingService.storeQueryAndMetadata(userQuery, state);
 
