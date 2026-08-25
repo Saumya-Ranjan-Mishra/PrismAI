@@ -64,4 +64,6 @@ public interface QueryEmbeddingRepository extends JpaRepository<QueryEmbedding, 
     }
     return joiner.toString();
   }
+
+  public Optional<QueryEmbedding> findByQueryIgnoreCase(String query);
 }

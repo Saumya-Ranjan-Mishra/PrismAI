@@ -56,7 +56,7 @@ public class QueryEmbeddingServiceImpl implements QueryEmbeddingService {
 
   @Override
   @Transactional
-  public void storeQueryAndMetadata(String query, ChatServiceState state) {
+  public Long storeQueryAndMetadata(String query, ChatServiceState state) {
     TransformersEmbeddingModel embeddingModel = embeddingModelFactory.getModel(modelName);
     String normalized = query.trim();
     float[] embedding = embeddingModel.embed(normalized);
@@ -75,5 +75,6 @@ public class QueryEmbeddingServiceImpl implements QueryEmbeddingService {
     metadata.setQueryEmbedding(queryEmbedding);
 
     queryMetadataRepository.save(metadata);
+    return queryEmbeddingId;
   }
 }

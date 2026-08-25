@@ -10,5 +10,5 @@ public interface QueryEmbeddingService {
 
   List<QueryEmbeddingDto> findSimilarQueries(String query, int limit);
 
-  void storeQueryAndMetadata(String query, ChatServiceState state);
+  Long storeQueryAndMetadata(String query, ChatServiceState state);
 }

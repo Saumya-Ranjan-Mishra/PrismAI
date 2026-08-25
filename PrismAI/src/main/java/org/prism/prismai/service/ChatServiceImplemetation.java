@@ -5,6 +5,7 @@ import java.util.List;
 import org.prism.prismai.DTO.ChatResponseDto;
 import org.prism.prismai.DTO.QueryEmbeddingDto;
 import org.prism.prismai.entities.ResponseProviders;
+import org.prism.prismai.repository.DocumentStorageRepository;
 import org.prism.prismai.service.interfaces.CacheService;
 import org.prism.prismai.service.interfaces.ChatService;
 import org.prism.prismai.service.interfaces.IntentClassificationService;
@@ -21,14 +22,16 @@ public class ChatServiceImplemetation implements ChatService {
   private final QueryResponseStrategyFactory queryResponseStrategyFactory;
   private final QueryEmbeddingService queryEmbeddingService;
   private final IntentClassificationService intentClassificationService;
+  private final DocumentStorageRepository docStorageRepository;
 
   public ChatServiceImplemetation(CacheService cacheService,
       QueryResponseStrategyFactory queryResponseStrategyFactory, QueryEmbeddingService queryEmbeddingService,
-      IntentClassificationService intentClassificationService) {
+      IntentClassificationService intentClassificationService, DocumentStorageRepository documentStorageRepository) {
     this.queryEmbeddingService = queryEmbeddingService;
     this.cacheService = cacheService;
     this.queryResponseStrategyFactory = queryResponseStrategyFactory;
     this.intentClassificationService = intentClassificationService;
+    this.docStorageRepository = documentStorageRepository;
   }
 
   @Override
@@ -60,7 +63,10 @@ public class ChatServiceImplemetation implements ChatService {
     Long providerTokenCount = strategy.consumeTokenCount();
     state.setTokenCount(providerTokenCount != null ? providerTokenCount : response.trim().split("\\s+").length);
     cacheService.saveValue(userQuery, response);
-    queryEmbeddingService.storeQueryAndMetadata(userQuery, state);
+    Long queryEmbeddingId = queryEmbeddingService.storeQueryAndMetadata(userQuery, state);
+
+    if(state.getResponseProvider() == ResponseProviders.SLM || state.getResponseProvider() == ResponseProviders.LLM )
+      docStorageRepository.save(queryEmbeddingId.toString(), response);
 
     return new ChatResponseDto(state.getResponseProvider().toString(), response, state.getIntent(),
         dto.get(0).getQuery(),
