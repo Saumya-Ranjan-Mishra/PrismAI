@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -57,6 +58,8 @@ public class LocalFileStorage implements DocumentStorageRepository {
 
     try {
       return Files.readString(filePath, StandardCharsets.UTF_8);
+    } catch (NoSuchFileException ex) {
+      return null;
     } catch (IOException ex) {
       throw new IllegalStateException("Failed to read document: " + filePath, ex);
     }

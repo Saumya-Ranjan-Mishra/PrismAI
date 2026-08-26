@@ -40,8 +40,9 @@ public class ChatServiceImplemetation implements ChatService {
 
     String responseFromCache = cacheService.getValue(userQuery);
 
-    if (responseFromCache != null)
+    if (responseFromCache != null) {
       return new ChatResponseDto("L1Cache", responseFromCache, "NA", "NA", 0.0);
+    }
 
     List<QueryEmbeddingDto> dto = queryEmbeddingService.findSimilarQueries(userQuery, 1);
 
@@ -58,18 +59,49 @@ public class ChatServiceImplemetation implements ChatService {
 
     state.setQuery(state.getResponseProvider() == ResponseProviders.L2Cache ? dto.get(0).getQuery() : userQuery);
 
-    QueryResponseStrategy strategy = queryResponseStrategyFactory.getStrategy(state.getResponseProvider());
-    String response = strategy.getResponse(state.getQuery());
-    Long providerTokenCount = strategy.consumeTokenCount();
-    state.setTokenCount(providerTokenCount != null ? providerTokenCount : response.trim().split("\\s+").length);
+    StrategyExecutionResult executionResult = resolveEmptyOrMissingResponse(state, userQuery);
+    String response = executionResult.response();
+    Long providerTokenCount = executionResult.strategy().consumeTokenCount();
+    state.setTokenCount(providerTokenCount != null ? providerTokenCount : countTokensFromResponse(response));
     cacheService.saveValue(userQuery, response);
     Long queryEmbeddingId = queryEmbeddingService.storeQueryAndMetadata(userQuery, state);
 
-    if(state.getResponseProvider() == ResponseProviders.SLM || state.getResponseProvider() == ResponseProviders.LLM )
+    if (state.getResponseProvider() == ResponseProviders.SLM || state.getResponseProvider() == ResponseProviders.LLM) {
       docStorageRepository.save(queryEmbeddingId.toString(), response);
+    }
 
+    String mostSimilarQuery = dto.isEmpty() ? "NA" : dto.get(0).getQuery();
     return new ChatResponseDto(state.getResponseProvider().toString(), response, state.getIntent(),
-        dto.get(0).getQuery(),
+        mostSimilarQuery,
         state.getPrecisionScore());
+  }
+
+  private StrategyExecutionResult resolveEmptyOrMissingResponse(ChatServiceState state, String userQuery) {
+    QueryResponseStrategy strategy = queryResponseStrategyFactory.getStrategy(state.getResponseProvider());
+    String response = strategy.getResponse(state.getQuery());
+
+    if (response != null && !response.isBlank()) {
+      return new StrategyExecutionResult(strategy, response);
+    }
+
+    if (state.getResponseProvider() == ResponseProviders.L2Cache) {
+      state.setIntent(intentClassificationService.getUserQueryIntent(userQuery));
+      state.setResponseProviderForUserQuery();
+      state.setQuery(userQuery);
+
+      QueryResponseStrategy liveStrategy = queryResponseStrategyFactory.getStrategy(state.getResponseProvider());
+      String liveResponse = liveStrategy.getResponse(state.getQuery());
+      return new StrategyExecutionResult(liveStrategy, liveResponse == null ? "" : liveResponse);
+    }
+
+    return new StrategyExecutionResult(strategy, response == null ? "" : response);
+  }
+
+  private long countTokensFromResponse(String response) {
+    String normalizedResponse = response.trim();
+    return normalizedResponse.isEmpty() ? 0 : normalizedResponse.split("\\s+").length;
+  }
+
+  private record StrategyExecutionResult(QueryResponseStrategy strategy, String response) {
   }
 }

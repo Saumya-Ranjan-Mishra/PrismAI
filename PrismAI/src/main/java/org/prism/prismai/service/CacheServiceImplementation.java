@@ -26,9 +26,11 @@ public class CacheServiceImplementation implements CacheService {
 
   public String getValue(String key) {
     Cache cache = cacheManager.getCache("llmResponses");
-    String cachedResponse = cache.get(key, String.class);
-    if (cachedResponse != null) {
-      return cachedResponse;
+    if (cache != null) {
+      String cachedResponse = cache.get(key, String.class);
+      if (cachedResponse != null) {
+        return cachedResponse;
+      }
     }
 
     Optional<QueryEmbedding> responseFromEmbeddingStore = queryEmbeddingRepository.findByQueryIgnoreCase(key);
