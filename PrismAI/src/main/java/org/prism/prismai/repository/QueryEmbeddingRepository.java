@@ -17,6 +17,20 @@ import java.util.StringJoiner;
 @Repository
 public interface QueryEmbeddingRepository extends JpaRepository<QueryEmbedding, Long> {
 
+  @Query(value = """
+      WITH ins AS (
+        INSERT INTO query_embedding (query, embedding)
+        VALUES (:query, CAST(:embedding AS vector))
+        ON CONFLICT (query) DO NOTHING
+        RETURNING id
+      )
+      SELECT id FROM ins
+      UNION ALL
+      SELECT id FROM query_embedding WHERE query = :query
+      LIMIT 1
+      """, nativeQuery = true)
+  Long insertIfAbsentAndReturnId(@Param("query") String query, @Param("embedding") String embedding);
+
   @Modifying
   @Transactional
   @Query(value = """
@@ -50,4 +64,6 @@ public interface QueryEmbeddingRepository extends JpaRepository<QueryEmbedding, 
     }
     return joiner.toString();
   }
+
+  public Optional<QueryEmbedding> findByQueryIgnoreCase(String query);
 }

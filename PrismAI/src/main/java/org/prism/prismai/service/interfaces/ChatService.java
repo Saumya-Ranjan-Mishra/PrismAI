@@ -1,5 +1,7 @@
 package org.prism.prismai.service.interfaces;
 
+import org.prism.prismai.DTO.ChatResponseDto;
+
 public interface ChatService {
-  String serveUserQuery(String userQuery);
+  ChatResponseDto serveUserQuery(String userQuery);
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +42,10 @@ public class QueryEmbedding {
   @Generated(event = EventType.INSERT)
   @Column(name = "created_at", insertable = false, updatable = false)
   private Instant createdAt;
+
+  @OneToOne(mappedBy = "queryEmbedding")
+
+  private QueryMetadata metadata;
 
   public QueryEmbedding(String query, float[] embedding) {
     this.query = query;

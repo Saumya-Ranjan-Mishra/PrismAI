@@ -6,4 +6,8 @@ public interface QueryResponseStrategy {
   public ResponseProviders provider();
 
   public String getResponse(String userQuery);
+
+  default Long consumeTokenCount() {
+    return null;
+  }
 }
