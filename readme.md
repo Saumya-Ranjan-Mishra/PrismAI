@@ -40,12 +40,12 @@ The following database aggregate is a snapshot of **337 recorded provider decisi
 
 ![Database aggregate showing recorded provider decisions](image.png)
 
-| Serving path | Requests | Share |
-| --- | ---: | ---: |
-| L2 semantic cache | 9 | 2.67% |
-| Small language model (SLM) | 293 | 86.94% |
-| Large language model (LLM) | 35 | 10.39% |
-| **Total recorded decisions** | **337** | **100.00%** |
+| Serving path                 | Requests |       Share |
+| ---------------------------- | -------: | ----------: |
+| L2 semantic cache            |        9 |       2.67% |
+| Small language model (SLM)   |      293 |      86.94% |
+| Large language model (LLM)   |       35 |      10.39% |
+| **Total recorded decisions** |  **337** | **100.00%** |
 
 ## Routing Decision Logic
 
@@ -108,3 +108,5 @@ For environment variables, external-service setup, model files, Docker images, a
 The retrieval experiments use the [LMSYS Chatbot Arena Conversations dataset](https://huggingface.co/datasets/lmsys/chatbot_arena_conversations).
 
 ## Working Demo
+
+https://github.com/user-attachments/assets/aef25bee-21b7-47d5-b65a-b1e18eaa3b30
