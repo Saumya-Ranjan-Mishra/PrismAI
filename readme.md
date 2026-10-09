@@ -89,3 +89,4 @@ For environment variables, external-service setup, model files, Docker images, a
 The retrieval experiments use the [LMSYS Chatbot Arena Conversations dataset](https://huggingface.co/datasets/lmsys/chatbot_arena_conversations).
 
 ## Working Demo
+https://github.com/user-attachments/assets/aef25bee-21b7-47d5-b65a-b1e18eaa3b30
