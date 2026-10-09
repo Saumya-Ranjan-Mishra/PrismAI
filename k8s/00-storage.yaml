@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prismai
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prismai-models
+  namespace: prismai
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prismai-documents
+  namespace: prismai
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: prismai-model-loader
+  namespace: prismai
+  labels:
+    app: prismai-model-loader
+spec:
+  containers:
+    - name: loader
+      image: busybox:1.36
+      command: ["sh", "-c", "sleep infinity"]
+      volumeMounts:
+        - name: models
+          mountPath: /models
+  volumes:
+    - name: models
+      persistentVolumeClaim:
+        claimName: prismai-models

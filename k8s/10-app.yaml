@@ -1,0 +1,169 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prismai-backend
+  namespace: prismai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prismai-backend
+  template:
+    metadata:
+      labels:
+        app: prismai-backend
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        fsGroupChangePolicy: OnRootMismatch
+      containers:
+        - name: backend
+          image: ghcr.io/saumya-ranjan-mishra/prismai-backend:main
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: prismai-config
+          env:
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: prismai-db
+                  key: SPRING_DATASOURCE_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: prismai-db
+                  key: SPRING_DATASOURCE_PASSWORD
+          volumeMounts:
+            - name: models
+              mountPath: /models
+              readOnly: true
+            - name: documents
+              mountPath: /var/lib/prismai/documents
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 36
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: prismai-models
+        - name: documents
+          persistentVolumeClaim:
+            claimName: prismai-documents
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prismai-backend
+  namespace: prismai
+spec:
+  type: ClusterIP
+  selector:
+    app: prismai-backend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prismai-frontend
+  namespace: prismai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prismai-frontend
+  template:
+    metadata:
+      labels:
+        app: prismai-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/saumya-ranjan-mishra/prismai-frontend:main
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prismai-frontend
+  namespace: prismai
+spec:
+  type: ClusterIP
+  selector:
+    app: prismai-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prismai
+  namespace: prismai
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: prismai.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prismai-frontend
+                port:
+                  number: 80

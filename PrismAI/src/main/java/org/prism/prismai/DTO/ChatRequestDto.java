@@ -15,4 +15,5 @@ public class ChatRequestDto {
   @JsonProperty("keep_alive")
   String keepAlive;
   List<UserQueryMessage> messages;
+  boolean stream;
 }
