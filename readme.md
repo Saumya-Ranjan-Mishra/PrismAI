@@ -6,7 +6,20 @@ PrismAI is a Java and Spring Boot AI gateway prototype that decides how a reques
 
 The central engineering idea is simple: **choose the least expensive suitable response path for each query.** A repeat query may be served from Redis, a sufficiently close semantic match may be reused from pgvector-backed storage, and requests that need new reasoning are routed according to classified intent.
 
-## Why PrismAI
+## Contents
+
+- [Design Goals and Value](#design-goals-and-value)
+- [Routing Workflow](#routing-workflow)
+- [Observed Routing Results](#observed-routing-results)
+- [Routing Decision Logic](#routing-decision-logic)
+- [System Architecture](#system-architecture)
+- [Technology Stack](#technology-stack)
+- [API Reference](#api-reference)
+- [Deployment and Setup](#deployment-and-setup)
+- [Dataset](#dataset)
+- [Demo](#demo)
+
+## Design Goals and Value
 
 - **Optimize inference spend:** avoid full response generation when an exact or semantically reusable answer is available; use a smaller local model for classification and appropriate response paths.
 - **Keep data close to the workload:** connect to operator-managed Ollama, PostgreSQL/pgvector, Redis, model files, and document storage. Organizations choose where these services run.
@@ -17,10 +30,16 @@ The central engineering idea is simple: **choose the least expensive suitable re
 
 PrismAI is designed for teams exploring private AI gateways, on-prem inference, and edge-oriented deployments where model placement, response latency, and inference cost are architectural decisions.
 
-## Observed Routing Metrics
+## Routing Workflow
+
+![PrismAI intent-based request routing workflow](image-1.png)
+
+## Observed Routing Results
 
 The following database aggregate is a snapshot of **337 recorded provider decisions** from the project:
-![alt text](image.png)
+
+![Database aggregate showing recorded provider decisions](image.png)
+
 | Serving path | Requests | Share |
 | --- | ---: | ---: |
 | L2 semantic cache | 9 | 2.67% |
@@ -28,7 +47,7 @@ The following database aggregate is a snapshot of **337 recorded provider decisi
 | Large language model (LLM) | 35 | 10.39% |
 | **Total recorded decisions** | **337** | **100.00%** |
 
-## Request Routing
+## Routing Decision Logic
 
 1. Check Redis for an exact query match.
 2. On a miss, create a local embedding and search prior queries in PostgreSQL with pgvector.
@@ -39,7 +58,7 @@ The following database aggregate is a snapshot of **337 recorded provider decisi
 
 The thresholds and model settings are configuration/design decisions to evaluate against a workload. The intent-classification step is itself a model call, but it is separated from full response generation so the system can choose a lower-cost route where suitable.
 
-## Architecture
+## System Architecture
 
 ```mermaid
 flowchart LR
@@ -61,7 +80,7 @@ flowchart LR
 
 For the high-level system view and detailed routing design, see [HLD](docs/HLD.md) and [LLD](docs/LLD.md). The editable workflow source is [`WorkFlow.drawio`](WorkFlow.drawio).
 
-## Technology
+## Technology Stack
 
 | Area                      | Technologies                                                      |
 | ------------------------- | ----------------------------------------------------------------- |
@@ -71,7 +90,7 @@ For the high-level system view and detailed routing design, see [HLD](docs/HLD.m
 | User interface            | React, TypeScript, Vite                                           |
 | Delivery                  | Docker, GitHub Actions, GHCR, Kubernetes, NGINX Ingress           |
 
-## API
+## API Reference
 
 | Endpoint                                    | Behavior                                                                  |
 | ------------------------------------------- | ------------------------------------------------------------------------- |
@@ -80,12 +99,12 @@ For the high-level system view and detailed routing design, see [HLD](docs/HLD.m
 
 The Kubernetes frontend proxies `/chat` to the backend's cluster-internal DNS name. The backend is exposed as a `ClusterIP` Service, not through the public Ingress.
 
-## Build and Run
+## Deployment and Setup
 
 For environment variables, external-service setup, model files, Docker images, and local Kubernetes instructions, see **[BYOE: Bring Your Own Environment](BYOE.md)**. The example configuration is [`k8s/prismai-config.env.example`](k8s/prismai-config.env.example), and deployment manifests are documented in [`k8s/README.md`](k8s/README.md).
 
-## Project Background
+## Dataset
 
 The retrieval experiments use the [LMSYS Chatbot Arena Conversations dataset](https://huggingface.co/datasets/lmsys/chatbot_arena_conversations).
 
-## Working Demo
+## Demo
