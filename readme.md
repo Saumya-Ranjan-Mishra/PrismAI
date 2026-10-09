@@ -28,8 +28,6 @@ The following database aggregate is a snapshot of **337 recorded provider decisi
 | Large language model (LLM) | 35 | 10.39% |
 | **Total recorded decisions** | **337** | **100.00%** |
 
-This demonstrates that the routing pipeline is selecting among retrieval, SLM, and LLM paths, with most recorded decisions served by the SLM. The snapshot is useful as an initial workload profile; it is not, by itself, a measured cost-saving claim. The capture period is not specified, and exact Redis L1 hits return before provider metadata is written, so this aggregate should be read as recorded provider decisions rather than every incoming request. A cost study would pair complete request-level counts with model token usage, latency, and the deployment's actual inference prices.
-
 ## Request Routing
 
 1. Check Redis for an exact query match.
